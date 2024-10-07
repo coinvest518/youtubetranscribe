@@ -7,7 +7,7 @@ const DownloadForm = () => {
     const [transcription, setTranscription] = useState('');
 
     // Use the Vercel URL directly
-    const apiUrl = 'https://youtubetranscribe-sandy.vercel.app/api'; // Add /api if your Flask app is in the api folder
+    const apiUrl = 'https://youtubetranscribe-sandy.vercel.app/'; // Add /api if your Flask app is in the api folder
 
     const handleDownload = async (e) => {
         e.preventDefault();
