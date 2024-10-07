@@ -1,0 +1,4 @@
+Flask
+youtube_dl
+requests
+python-dotenv
