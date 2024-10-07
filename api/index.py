@@ -1,15 +1,20 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
+import logging
 from dotenv import load_dotenv
 import requests
 from yt_dlp import YoutubeDL
 
-
+# Load environment variables
 load_dotenv()
 
+# Initialize Flask app
 app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 CORS(app)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Set up yt-dlp options
 ydl_opts = {
@@ -23,6 +28,7 @@ ydl_opts = {
     'noplaylist': True,
 }
 
+# Ensure the downloads directory exists
 if not os.path.exists('downloads'):
     os.makedirs('downloads')
 
@@ -37,12 +43,15 @@ def download_audio():
         return jsonify({"error": "No YouTube URL provided"}), 400
 
     try:
+        logging.info(f"Downloading audio from: {youtube_url}")
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=True)
             title = info['title']
             file_name = f"downloads/{title}.mp3"
+            logging.info(f"Download successful: {file_name}")
             return jsonify({"message": "Download successful", "file": file_name})
     except Exception as e:
+        logging.error(f"Error downloading audio: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 # Serve the React app
@@ -57,51 +66,43 @@ def transcribe_audio():
     if not file_name:
         return jsonify({"error": "No file name provided"}), 400
 
-    # Upload the audio file to AssemblyAI
     headers = {
         'authorization': ASSEMBLY_AI_API_KEY,
         'content-type': 'application/json',
     }
     
-    # Open and read the audio file
     try:
         with open(file_name, 'rb') as audio_file:
             audio_data = audio_file.read()
     except FileNotFoundError:
+        logging.error("File not found")
         return jsonify({"error": "File not found"}), 404
 
-    # Uploading the audio file
     response = requests.post('https://api.assemblyai.com/v2/upload', headers=headers, data=audio_data)
     
     if response.status_code != 200:
-        # Log the raw response for debugging
-        print("Upload failed:", response.status_code, response.text)
+        logging.error("Upload failed: %s", response.text)
         return jsonify({"error": response.json().get("error", "Error uploading file")}), 500
 
     audio_url = response.json().get('upload_url')
 
-    # Set up transcription request with language detection enabled
     transcription_request = {
         'audio_url': audio_url,
-        'language_detection': True,  # Enable automatic language detection
-        'language_confidence_threshold': 0.4  # Set a threshold for language confidence
+        'language_detection': True,
+        'language_confidence_threshold': 0.4,
     }
 
-    # Send the transcription request
     response = requests.post('https://api.assemblyai.com/v2/transcript', json=transcription_request, headers=headers)
     
     if response.status_code != 200:
-        # Log the raw response for debugging
-        print("Transcription request failed:", response.status_code, response.text)
+        logging.error("Transcription request failed: %s", response.text)
         return jsonify({"error": response.json().get("error", "Error creating transcription")}), 500
 
     transcript_id = response.json().get('id')
-
     return jsonify({"message": "Transcription request created", "transcript_id": transcript_id})
 
 @app.route('/transcription_result/<transcript_id>', methods=['GET'])
 def transcription_result(transcript_id):
-    # Fetch the transcription result from AssemblyAI
     headers = {
         'authorization': ASSEMBLY_AI_API_KEY,
     }
@@ -109,10 +110,10 @@ def transcription_result(transcript_id):
     response = requests.get(f'https://api.assemblyai.com/v2/transcript/{transcript_id}', headers=headers)
     
     if response.status_code != 200:
+        logging.error("Error fetching transcription result: %s", response.text)
         return jsonify({"error": response.json().get("error", "Error fetching transcription result")}), 500
 
     transcript_result = response.json()
-    
     return jsonify(transcript_result)
 
 if __name__ == '__main__':
