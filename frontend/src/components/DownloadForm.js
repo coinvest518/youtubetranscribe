@@ -7,7 +7,7 @@ const DownloadForm = () => {
     const [transcription, setTranscription] = useState('');
 
     // Use the Vercel URL directly
-    const apiUrl = 'https://youtubetranscribe-sandy.vercel.app';
+    const apiUrl = 'https://youtubetranscribe-sandy.vercel.app/api'; // Add /api if your Flask app is in the api folder
 
     const handleDownload = async (e) => {
         e.preventDefault();
@@ -16,7 +16,7 @@ const DownloadForm = () => {
 
         try {
             // Step 1: Download the audio using the Vercel backend URL
-            const downloadResponse = await axios.post(`${apiUrl}/api/download`, { youtube_url: youtubeUrl });
+            const downloadResponse = await axios.post(`${apiUrl}/download`, { youtube_url: youtubeUrl });
             setMessage(downloadResponse.data.message);
             const fileName = downloadResponse.data.file;
 
