@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 # Set up yt-dlp options
 ydl_opts = {
     'format': 'bestaudio/best',
-    'outtmpl': 'downloads/%(title)s.%(ext)s',
+    'outtmpl': 'api/downloads/%(title)s.%(ext)s',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'mp3',
@@ -29,13 +29,13 @@ ydl_opts = {
 }
 
 # Ensure the downloads directory exists
-if not os.path.exists('downloads'):
-    os.makedirs('downloads')
+if not os.path.exists('api/downloads'):
+    os.makedirs('api/downloads')
 
 # Fetch the API key from environment variables
 ASSEMBLY_AI_API_KEY = os.getenv('ASSEMBLY_AI_API_KEY')
 
-@app.route('/download', methods=['POST'])
+@app.route('api/download', methods=['POST'])
 def download_audio():
     youtube_url = request.json.get('youtube_url')
 
@@ -47,7 +47,7 @@ def download_audio():
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=True)
             title = info['title']
-            file_name = f"downloads/{title}.mp3"
+            file_name = f"api/downloads/{title}.mp3"
             logging.info(f"Download successful: {file_name}")
             return jsonify({"message": "Download successful", "file": file_name})
     except Exception as e:
