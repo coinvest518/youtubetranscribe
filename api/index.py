@@ -8,7 +8,7 @@ from yt_dlp import YoutubeDL
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 CORS(app)
 
 # Set up yt-dlp options
