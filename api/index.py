@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
+from flask import Flask, request, jsonify, send_from_directory # type: ignore
+from flask_cors import CORS # type: ignore
 import os
 import logging
-from dotenv import load_dotenv
-import requests
-from yt_dlp import YoutubeDL
+from dotenv import load_dotenv # type: ignore
+import requests # type: ignore
+from yt_dlp import YoutubeDL # type: ignore
 
 # Load environment variables
 load_dotenv()
