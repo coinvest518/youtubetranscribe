@@ -6,19 +6,22 @@ const DownloadForm = () => {
     const [message, setMessage] = useState('');
     const [transcription, setTranscription] = useState('');
 
+    // Use the Vercel URL directly
+    const apiUrl = 'https://youtubetranscribe-sandy.vercel.app';
+
     const handleDownload = async (e) => {
         e.preventDefault();
         setMessage('');
         setTranscription('');
 
         try {
-            // Step 1: Download the audio
-            const downloadResponse = await axios.post('https://youtubetranscribe-sandy.vercel.app/download', { youtube_url: youtubeUrl });
+            // Step 1: Download the audio using the Vercel backend URL
+            const downloadResponse = await axios.post(`${apiUrl}/download`, { youtube_url: youtubeUrl });
             setMessage(downloadResponse.data.message);
             const fileName = downloadResponse.data.file;
 
             // Step 2: Start transcription
-            const transcribeResponse = await axios.post('https://youtubetranscribe-sandy.vercel.app/transcribe', { file_name: fileName });
+            const transcribeResponse = await axios.post(`${apiUrl}/transcribe`, { file_name: fileName });
             const id = transcribeResponse.data.transcript_id; // Use a local variable instead
             setMessage('Transcription in progress...');
 
@@ -32,7 +35,7 @@ const DownloadForm = () => {
     const pollTranscriptionResult = async (id) => {
         const interval = setInterval(async () => {
             try {
-                const resultResponse = await axios.get(`https://youtubetranscribe-sandy.vercel.app/transcription_result/${id}`);
+                const resultResponse = await axios.get(`${apiUrl}/transcription_result/${id}`);
                 if (resultResponse.data.status === 'completed') {
                     clearInterval(interval);
                     setTranscription(resultResponse.data.text);
