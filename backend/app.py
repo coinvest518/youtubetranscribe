@@ -14,7 +14,7 @@ CORS(app)
 # Set up yt-dlp options
 ydl_opts = {
     'format': 'bestaudio/best',
-    'outtmpl': 'downloads/%(title)s.%(ext)s',
+    'outtmpl': 'download/%(title)s.%(ext)s',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'mp3',
@@ -23,8 +23,8 @@ ydl_opts = {
     'noplaylist': True,
 }
 
-if not os.path.exists('downloads'):
-    os.makedirs('downloads')
+if not os.path.exists('download'):
+    os.makedirs('download')
 
 # Fetch the API key from environment variables
 ASSEMBLY_AI_API_KEY = os.getenv('ASSEMBLY_AI_API_KEY')
@@ -40,7 +40,7 @@ def download_audio():
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=True)
             title = info['title']
-            file_name = f"downloads/{title}.mp3"
+            file_name = f"download/{title}.mp3"
             return jsonify({"message": "Download successful", "file": file_name})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -121,3 +121,4 @@ def transcription_result(transcript_id):
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+
