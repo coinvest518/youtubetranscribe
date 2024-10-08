@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import requests
 from yt_dlp import YoutubeDL
 
-
 load_dotenv()
 
 app = Flask(__name__, static_folder='../frontend/build')
@@ -29,9 +28,9 @@ if not os.path.exists('download'):
 # Fetch the API key from environment variables
 ASSEMBLY_AI_API_KEY = os.getenv('ASSEMBLY_AI_API_KEY')
 
-@app.route('/download', methods=['POST'])
+@app.route('/download', methods=['GET'])
 def download_audio():
-    youtube_url = request.json.get('youtube_url')
+    youtube_url = request.args.get('youtube_url')
 
     if not youtube_url:
         return jsonify({"error": "No YouTube URL provided"}), 400
@@ -54,9 +53,9 @@ def home():
 def serve_static(path):
     return send_from_directory(app.static_folder, path)
 
-@app.route('/transcribe', methods=['POST'])
+@app.route('/transcribe', methods=['GET'])
 def transcribe_audio():
-    file_name = request.json.get('file_name')
+    file_name = request.args.get('file_name')
 
     if not file_name:
         return jsonify({"error": "No file name provided"}), 400
@@ -78,7 +77,6 @@ def transcribe_audio():
     response = requests.post('https://api.assemblyai.com/v2/upload', headers=headers, data=audio_data)
     
     if response.status_code != 200:
-        # Log the raw response for debugging
         print("Upload failed:", response.status_code, response.text)
         return jsonify({"error": response.json().get("error", "Error uploading file")}), 500
 
@@ -87,15 +85,14 @@ def transcribe_audio():
     # Set up transcription request with language detection enabled
     transcription_request = {
         'audio_url': audio_url,
-        'language_detection': True,  # Enable automatic language detection
-        'language_confidence_threshold': 0.4  # Set a threshold for language confidence
+        'language_detection': True,
+        'language_confidence_threshold': 0.4
     }
 
     # Send the transcription request
     response = requests.post('https://api.assemblyai.com/v2/transcript', json=transcription_request, headers=headers)
     
     if response.status_code != 200:
-        # Log the raw response for debugging
         print("Transcription request failed:", response.status_code, response.text)
         return jsonify({"error": response.json().get("error", "Error creating transcription")}), 500
 
@@ -103,8 +100,13 @@ def transcribe_audio():
 
     return jsonify({"message": "Transcription request created", "transcript_id": transcript_id})
 
-@app.route('/transcription_result/<transcript_id>', methods=['POST'])
-def transcription_result(transcript_id):
+@app.route('/transcription_result', methods=['GET'])
+def transcription_result():
+    transcript_id = request.args.get('id')
+    
+    if not transcript_id:
+        return jsonify({"error": "No transcript ID provided"}), 400
+
     # Fetch the transcription result from AssemblyAI
     headers = {
         'authorization': ASSEMBLY_AI_API_KEY,
@@ -121,4 +123,3 @@ def transcription_result(transcript_id):
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-

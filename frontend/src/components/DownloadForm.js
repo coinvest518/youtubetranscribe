@@ -13,23 +13,23 @@ const DownloadForm = () => {
 
         try {
             // Step 1: Download the audio
-            const downloadResponse = await axios.post(
-                `${process.env.REACT_APP_API_URL}/download`, // Use environment variable
-                { youtube_url: youtubeUrl }
+            const downloadResponse = await axios.get(
+                `${process.env.REACT_APP_API_URL}/download`,
+                { params: { youtube_url: youtubeUrl } }
             );
             setMessage(downloadResponse.data.message);
             const fileName = downloadResponse.data.file;
 
             // Step 2: Start transcription
-            const transcribeResponse = await axios.post(
-                `${process.env.REACT_APP_API_URL}/transcribe`, // Use environment variable
-                { file_name: fileName }
+            const transcribeResponse = await axios.get(
+                `${process.env.REACT_APP_API_URL}/transcribe`,
+                { params: { file_name: fileName } }
             );
-            const id = transcribeResponse.data.transcript_id; // Use a local variable instead
+            const id = transcribeResponse.data.transcript_id;
             setMessage('Transcription in progress...');
 
             // Step 3: Poll for transcription result
-            pollTranscriptionResult(id); // Pass the local variable to the polling function
+            pollTranscriptionResult(id);
         } catch (error) {
             setMessage(`Error: ${error.response ? error.response.data.error : error.message}`);
         }
@@ -38,13 +38,13 @@ const DownloadForm = () => {
     const pollTranscriptionResult = async (id) => {
         const interval = setInterval(async () => {
             try {
-                const resultResponse = await axios.post(
+                const resultResponse = await axios.get(
                     `${process.env.REACT_APP_API_URL}/transcription_result`,
-                    {id: id} // Use environment variable
+                    { params: { id: id } }
                 );
                 if (resultResponse.data.status === 'completed') {
                     clearInterval(interval);
-                    setTranscription(resultResponse.data.text || ''); // Use fallback if text is undefined
+                    setTranscription(resultResponse.data.text || '');
                     setMessage('Transcription completed successfully.');
                 } else if (resultResponse.data.status === 'failed') {
                     clearInterval(interval);
