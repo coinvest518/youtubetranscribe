@@ -103,7 +103,7 @@ def transcribe_audio():
 
     return jsonify({"message": "Transcription request created", "transcript_id": transcript_id})
 
-@app.route('/transcription_result/<transcript_id>', methods=['GET'])
+@app.route('/transcription_result/<transcript_id>', methods=['POST'])
 def transcription_result(transcript_id):
     # Fetch the transcription result from AssemblyAI
     headers = {

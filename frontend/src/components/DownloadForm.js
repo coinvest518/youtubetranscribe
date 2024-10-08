@@ -38,8 +38,9 @@ const DownloadForm = () => {
     const pollTranscriptionResult = async (id) => {
         const interval = setInterval(async () => {
             try {
-                const resultResponse = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/transcription_result/${id}` // Use environment variable
+                const resultResponse = await axios.post(
+                    `${process.env.REACT_APP_API_URL}/transcription_result`,
+                    {id: id} // Use environment variable
                 );
                 if (resultResponse.data.status === 'completed') {
                     clearInterval(interval);
