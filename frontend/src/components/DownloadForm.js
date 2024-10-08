@@ -13,12 +13,18 @@ const DownloadForm = () => {
 
         try {
             // Step 1: Download the audio
-            const downloadResponse = await axios.post('http://localhost:5000/download', { youtube_url: youtubeUrl });
+            const downloadResponse = await axios.post(
+                `${process.env.REACT_APP_API_URL}/download`, // Use environment variable
+                { youtube_url: youtubeUrl }
+            );
             setMessage(downloadResponse.data.message);
             const fileName = downloadResponse.data.file;
 
             // Step 2: Start transcription
-            const transcribeResponse = await axios.post('http://localhost:5000/transcribe', { file_name: fileName });
+            const transcribeResponse = await axios.post(
+                `${process.env.REACT_APP_API_URL}/transcribe`, // Use environment variable
+                { file_name: fileName }
+            );
             const id = transcribeResponse.data.transcript_id; // Use a local variable instead
             setMessage('Transcription in progress...');
 
@@ -32,10 +38,12 @@ const DownloadForm = () => {
     const pollTranscriptionResult = async (id) => {
         const interval = setInterval(async () => {
             try {
-                const resultResponse = await axios.get(`http://localhost:5000/transcription_result/${id}`);
+                const resultResponse = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/transcription_result/${id}` // Use environment variable
+                );
                 if (resultResponse.data.status === 'completed') {
                     clearInterval(interval);
-                    setTranscription(resultResponse.data.text);
+                    setTranscription(resultResponse.data.text || ''); // Use fallback if text is undefined
                     setMessage('Transcription completed successfully.');
                 } else if (resultResponse.data.status === 'failed') {
                     clearInterval(interval);
