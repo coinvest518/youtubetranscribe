@@ -1,0 +1,9 @@
+runtime: python39  # Or a suitable Python runtime
+service: youtubeaudioextractor # Choose a service name
+
+env_variables:
+  ASSEMBLY_AI_API_KEY: 'dcf3ac04cf8a404d8554a56bbe32fde6' # Set your API key here
+
+handlers:
+- url: /.*
+  script: auto 
