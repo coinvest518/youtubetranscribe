@@ -8,7 +8,7 @@ from yt_dlp import YoutubeDL
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/build')
 CORS(app)
 
 # Set up yt-dlp options
@@ -49,6 +49,10 @@ def download_audio():
 @app.route('/')
 def home():
     return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory(app.static_folder, path)
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
