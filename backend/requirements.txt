@@ -1,0 +1,5 @@
+Flask
+youtube_dl
+requests
+python-dotenv
+Flask-CORS

@@ -6,22 +6,19 @@ const DownloadForm = () => {
     const [message, setMessage] = useState('');
     const [transcription, setTranscription] = useState('');
 
-    // Use the Vercel URL directly
-    const apiUrl = 'https://youtubetranscribe-sandy.vercel.app/api'; // Add /api if your Flask app is in the api folder
-
     const handleDownload = async (e) => {
         e.preventDefault();
         setMessage('');
         setTranscription('');
 
         try {
-            // Step 1: Download the audio using the Vercel backend URL
-            const downloadResponse = await axios.post(`${apiUrl}/api/download`, { youtube_url: youtubeUrl });
+            // Step 1: Download the audio
+            const downloadResponse = await axios.post('http://localhost:5000/download', { youtube_url: youtubeUrl });
             setMessage(downloadResponse.data.message);
             const fileName = downloadResponse.data.file;
 
             // Step 2: Start transcription
-            const transcribeResponse = await axios.post(`${apiUrl}/transcribe`, { file_name: fileName });
+            const transcribeResponse = await axios.post('http://localhost:5000/transcribe', { file_name: fileName });
             const id = transcribeResponse.data.transcript_id; // Use a local variable instead
             setMessage('Transcription in progress...');
 
@@ -35,7 +32,7 @@ const DownloadForm = () => {
     const pollTranscriptionResult = async (id) => {
         const interval = setInterval(async () => {
             try {
-                const resultResponse = await axios.get(`${apiUrl}/transcription_result/${id}`);
+                const resultResponse = await axios.get(`http://localhost:5000/transcription_result/${id}`);
                 if (resultResponse.data.status === 'completed') {
                     clearInterval(interval);
                     setTranscription(resultResponse.data.text);
